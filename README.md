@@ -1,2 +1,2 @@
-# Kensei-Mushi_The-Tainted-World
-Kensei-Mushi: The Tainted World. #phyton #OPP #Godot
+# Kensei-Mushi_The-Corrupted-World
+Kensei-Mushi: The corrupted world. #phyton #OPP #Godot
