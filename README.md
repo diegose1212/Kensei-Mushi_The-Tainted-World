@@ -10,7 +10,7 @@
 
 | Acción         | Tecla            |
 |----------------|------------------|
-| Mover          | ↑ ↓ ← → (flechas) |
+| Mover          | W A S D          |
 | Atacar         | Espacio          |
 | Cubrirse       | Q                |
 
