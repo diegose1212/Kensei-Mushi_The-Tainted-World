@@ -1,9 +1,0 @@
-[gd_resource type="ShaderMaterial" format=3 uid="uid://c0vomi48cyksr"]
-
-[ext_resource type="Shader" uid="uid://cam6wfn7ccp8g" path="res://shaders/outlines/outline_delgado.gdshader" id="1_fwxcy"]
-
-[resource]
-render_priority = 0
-shader = ExtResource("1_fwxcy")
-shader_parameter/outline_thickness = 0.0230000010925
-shader_parameter/outline_color = Color(0, 0, 0, 1)

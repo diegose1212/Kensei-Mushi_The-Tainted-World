@@ -1,9 +1,0 @@
-[gd_scene format=3 uid="uid://cwby1tctiojhg"]
-
-[ext_resource type="PackedScene" uid="uid://d0tttkusp4oxa" path="res://assets/agua/agua.glb" id="1_j5o4b"]
-
-[node name="libreria_agua" type="Node3D" unique_id=346145007]
-
-[node name="agua" parent="." unique_id=10549593 instance=ExtResource("1_j5o4b")]
-
-[editable path="agua"]

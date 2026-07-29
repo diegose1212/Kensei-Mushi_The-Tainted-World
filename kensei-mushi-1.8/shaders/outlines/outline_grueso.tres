@@ -1,9 +1,0 @@
-[gd_resource type="ShaderMaterial" format=3 uid="uid://cr5halorrap00"]
-
-[ext_resource type="Shader" uid="uid://l7jbbgheeais" path="res://shaders/outlines/outline_grueso.gdshader" id="1_3ylni"]
-
-[resource]
-render_priority = 0
-shader = ExtResource("1_3ylni")
-shader_parameter/outline_thickness = 0.05
-shader_parameter/outline_color = Color(0, 0, 0, 1)
