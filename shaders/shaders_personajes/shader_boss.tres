@@ -1,0 +1,94 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://u5r3f18pdqid"]
+
+[sub_resource type="Shader" id="Shader_ptij5"]
+code = "shader_type spatial;
+render_mode cull_front, unshaded;
+
+uniform float outline_thickness : hint_range(0.0, 1.0) = 0.0005;
+uniform vec4 outline_color : source_color = vec4(0.0, 0.0, 0.0, 1.0);
+
+void vertex() {
+    // Escalamos directamente desde el vértice usando la normal
+    VERTEX += NORMAL * outline_thickness;
+}
+
+void fragment() {
+    ALBEDO = outline_color.rgb;
+}"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ictuw"]
+render_priority = 0
+shader = SubResource("Shader_ptij5")
+shader_parameter/outline_thickness = 0.294000013965
+shader_parameter/outline_color = Color(0, 0, 0, 1)
+
+[sub_resource type="Shader" id="Shader_5u4gk"]
+code = "shader_type spatial;
+render_mode specular_toon;
+
+uniform vec4 albedo : source_color = vec4(1.0);
+uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform sampler2D noise_texture : filter_nearest, repeat_enable;
+uniform float noise_scale = 5.0;
+
+uniform float cutoff_1 : hint_range(0.0, 1.0) = 0.6;
+uniform float cutoff_2 : hint_range(0.0, 1.0) = 0.3;
+
+uniform vec4 color_luz : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform vec4 color_medio : source_color = vec4(0.6, 0.6, 0.7, 1.0);
+uniform vec4 color_sombra : source_color = vec4(0.2, 0.2, 0.3, 1.0);
+
+varying vec2 vertex_uv;
+
+void vertex() {
+    vertex_uv = UV;
+}
+
+void fragment() {
+    vec4 tex = texture(texture_albedo, vertex_uv);
+    ALBEDO = albedo.rgb * tex.rgb;
+}
+
+void light() {
+    float NdotL = dot(NORMAL, LIGHT);
+    float noise = texture(noise_texture, vertex_uv * noise_scale).r;
+    
+    float adj_cut1 = cutoff_1 + (noise - 0.5) * 0.25;
+    float adj_cut2 = cutoff_2 + (noise - 0.5) * 0.25;
+    
+    vec3 final_shading = color_sombra.rgb;
+    if (NdotL > adj_cut1) {
+        final_shading = color_luz.rgb;
+    } else if (NdotL > adj_cut2) {
+        final_shading = color_medio.rgb;
+    }
+    
+    DIFFUSE_LIGHT = LIGHT_COLOR * final_shading * ATTENUATION;
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_1f427"]
+frequency = 0.1
+offset = Vector3(717.95, -358.97, 150)
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_jm00o"]
+width = 1000
+height = 100
+noise = SubResource("FastNoiseLite_1f427")
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_3gfpr"]
+load_path = "res://.godot/imported/mallaBoss1_cuerpo Base Color.png-029acf2e596e3c3e7715a68c7d6472d3.s3tc.ctex"
+
+[resource]
+render_priority = 0
+next_pass = SubResource("ShaderMaterial_ictuw")
+shader = SubResource("Shader_5u4gk")
+shader_parameter/albedo = Color(0.90359825, 0.90359825, 0.9035982, 1)
+shader_parameter/texture_albedo = SubResource("CompressedTexture2D_3gfpr")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_jm00o")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6000000285
+shader_parameter/cutoff_2 = 0.0
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)

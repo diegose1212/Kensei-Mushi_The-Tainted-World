@@ -1,0 +1,596 @@
+[gd_scene format=3 uid="uid://cvhinnfosmya7"]
+
+[ext_resource type="PackedScene" uid="uid://dckjvwy6o8ite" path="res://assets/naturaleza/naturaleza1.glb" id="1_77kro"]
+[ext_resource type="Material" uid="uid://c0vomi48cyksr" path="res://shaders/outlines/outline_delgado.tres" id="2_ycyxq"]
+[ext_resource type="Texture2D" uid="uid://ceqcumpghfl2k" path="res://assets/naturaleza/texturas/naturaleza1_tronco Base Color.png" id="3_584fs"]
+[ext_resource type="Material" uid="uid://gys1a3ohlcei" path="res://shaders/shader_entorno/outline_medio.tres" id="4_0y0mo"]
+[ext_resource type="Texture2D" uid="uid://c8tlfn27mva81" path="res://assets/naturaleza/texturas/naturaleza1_Grass.png" id="4_ikmqb"]
+[ext_resource type="Shader" uid="uid://cam6wfn7ccp8g" path="res://shaders/outlines/outline_delgado.gdshader" id="5_0y0mo"]
+[ext_resource type="Texture2D" uid="uid://ckh85poman31b" path="res://assets/naturaleza/texturas/naturaleza1_Bark_NormalTree.png" id="5_fiope"]
+[ext_resource type="Texture2D" uid="uid://cod822rqmhw0f" path="res://assets/naturaleza/texturas/naturaleza1_MapleTree_Bark.png" id="5_jw7of"]
+[ext_resource type="Texture2D" uid="uid://du6bf8n1qm6qd" path="res://assets/naturaleza/texturas/naturaleza1_BirchTree_Bark.png" id="5_uxrf1"]
+[ext_resource type="Shader" uid="uid://smqrtvo6yhed" path="res://shaders/outlines/outline_invertido.gdshader" id="7_uxrf1"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_uxrf1"]
+render_priority = 0
+shader = ExtResource("5_0y0mo")
+shader_parameter/outline_thickness = 0.0010000000475
+shader_parameter/outline_color = Color(0, 0, 0, 1)
+
+[sub_resource type="Shader" id="Shader_eglj5"]
+code = "shader_type spatial;
+render_mode specular_toon;
+
+uniform vec4 albedo : source_color = vec4(1.0);
+uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform sampler2D noise_texture : filter_nearest, repeat_enable;
+uniform float noise_scale = 5.0;
+
+uniform float cutoff_1 : hint_range(0.0, 1.0) = 0.6;
+uniform float cutoff_2 : hint_range(0.0, 1.0) = 0.3;
+
+uniform vec4 color_luz : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform vec4 color_medio : source_color = vec4(0.6, 0.6, 0.7, 1.0);
+uniform vec4 color_sombra : source_color = vec4(0.2, 0.2, 0.3, 1.0);
+
+varying vec2 vertex_uv;
+
+void vertex() {
+    vertex_uv = UV;
+}
+
+void fragment() {
+    vec4 tex = texture(texture_albedo, vertex_uv);
+    ALBEDO = albedo.rgb * tex.rgb;
+}
+
+void light() {
+    float NdotL = dot(NORMAL, LIGHT);
+    float noise = texture(noise_texture, vertex_uv * noise_scale).r;
+    
+    float adj_cut1 = cutoff_1 + (noise - 0.5) * 0.25;
+    float adj_cut2 = cutoff_2 + (noise - 0.5) * 0.25;
+    
+    vec3 final_shading = color_sombra.rgb;
+    if (NdotL > adj_cut1) {
+        final_shading = color_luz.rgb;
+    } else if (NdotL > adj_cut2) {
+        final_shading = color_medio.rgb;
+    }
+    
+    DIFFUSE_LIGHT = LIGHT_COLOR * final_shading * ATTENUATION;
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_jw7of"]
+render_priority = 0
+next_pass = SubResource("ShaderMaterial_uxrf1")
+shader = SubResource("Shader_eglj5")
+shader_parameter/albedo = Color(0.9901138, 0.9903025, 0.9682656, 1)
+shader_parameter/texture_albedo = ExtResource("3_584fs")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6000000285
+shader_parameter/cutoff_2 = 0.0
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_eglj5"]
+radius = 0.003
+height = 0.028183594
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_emw85"]
+frequency = 0.1
+offset = Vector3(717.95, -358.97, 150)
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_j27to"]
+width = 1000
+height = 100
+noise = SubResource("FastNoiseLite_emw85")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_dyq5p"]
+render_priority = 0
+next_pass = ExtResource("4_0y0mo")
+shader = SubResource("Shader_eglj5")
+shader_parameter/albedo = Color(0.9901138, 0.9903025, 0.9682656, 1)
+shader_parameter/texture_albedo = ExtResource("5_uxrf1")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_j27to")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6000000285
+shader_parameter/cutoff_2 = 0.0
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_urmyh"]
+height = 0.027807616
+radius = 0.003
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_hhr7h"]
+render_priority = 0
+next_pass = ExtResource("4_0y0mo")
+shader = SubResource("Shader_eglj5")
+shader_parameter/albedo = Color(0.9901138, 0.9903025, 0.9682656, 1)
+shader_parameter/texture_albedo = ExtResource("5_uxrf1")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_j27to")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6000000285
+shader_parameter/cutoff_2 = 0.0
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_yp340"]
+height = 0.03729248
+radius = 0.0029296875
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0nvnd"]
+render_priority = 0
+next_pass = ExtResource("4_0y0mo")
+shader = SubResource("Shader_eglj5")
+shader_parameter/albedo = Color(0.9901138, 0.9903025, 0.9682656, 1)
+shader_parameter/texture_albedo = ExtResource("5_uxrf1")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_j27to")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6000000285
+shader_parameter/cutoff_2 = 0.0
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_l3boe"]
+height = 0.027001953
+radius = 0.0024414063
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_meoeu"]
+render_priority = 0
+next_pass = ExtResource("4_0y0mo")
+shader = SubResource("Shader_eglj5")
+shader_parameter/albedo = Color(0.9901138, 0.9903025, 0.9682656, 1)
+shader_parameter/texture_albedo = ExtResource("5_uxrf1")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_j27to")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6000000285
+shader_parameter/cutoff_2 = 0.0
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_giv87"]
+height = 0.02796634
+radius = 0.00390625
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_riowr"]
+render_priority = 0
+next_pass = ExtResource("4_0y0mo")
+shader = SubResource("Shader_eglj5")
+shader_parameter/albedo = Color(0.9901138, 0.9903025, 0.9682656, 1)
+shader_parameter/texture_albedo = ExtResource("5_uxrf1")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_j27to")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6000000285
+shader_parameter/cutoff_2 = 0.0
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_620pr"]
+height = 0.030576171
+radius = 0.0029296875
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_v7qj6"]
+render_priority = 0
+next_pass = ExtResource("4_0y0mo")
+shader = SubResource("Shader_eglj5")
+shader_parameter/albedo = Color(0.9901138, 0.9903025, 0.9682656, 1)
+shader_parameter/texture_albedo = ExtResource("5_jw7of")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_j27to")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6000000285
+shader_parameter/cutoff_2 = 0.0
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_eglj5"]
+height = 0.32202148
+radius = 0.036
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_riq3f"]
+render_priority = 0
+next_pass = ExtResource("4_0y0mo")
+shader = SubResource("Shader_eglj5")
+shader_parameter/albedo = Color(0.9901138, 0.9903025, 0.9682656, 1)
+shader_parameter/texture_albedo = ExtResource("5_jw7of")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_j27to")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6000000285
+shader_parameter/cutoff_2 = 0.0
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_j27to"]
+margin = 0.0
+height = 0.016625976
+radius = 0.00390625
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_k7gid"]
+render_priority = 0
+next_pass = ExtResource("4_0y0mo")
+shader = SubResource("Shader_eglj5")
+shader_parameter/albedo = Color(0.9901138, 0.9903025, 0.9682656, 1)
+shader_parameter/texture_albedo = ExtResource("5_jw7of")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_j27to")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6000000285
+shader_parameter/cutoff_2 = 0.0
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_ssgsk"]
+height = 0.02281189
+radius = 0.0048828125
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8cmtg"]
+render_priority = 0
+next_pass = ExtResource("4_0y0mo")
+shader = SubResource("Shader_eglj5")
+shader_parameter/albedo = Color(0.9901138, 0.9903025, 0.9682656, 1)
+shader_parameter/texture_albedo = ExtResource("5_jw7of")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_j27to")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6000000285
+shader_parameter/cutoff_2 = 0.0
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_6rcni"]
+height = 0.025571289
+radius = 0.0034179688
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_u5s30"]
+render_priority = 0
+next_pass = ExtResource("4_0y0mo")
+shader = SubResource("Shader_eglj5")
+shader_parameter/albedo = Color(0.9901138, 0.9903025, 0.9682656, 1)
+shader_parameter/texture_albedo = ExtResource("5_jw7of")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_j27to")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6000000285
+shader_parameter/cutoff_2 = 0.0
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_dyq5p"]
+height = 0.02144043
+radius = 0.00390625
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_urmyh"]
+render_priority = 0
+shader = ExtResource("5_0y0mo")
+shader_parameter/outline_thickness = 0.0010000000475
+shader_parameter/outline_color = Color(0, 0, 0, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_eglj5"]
+render_priority = 0
+next_pass = SubResource("ShaderMaterial_urmyh")
+shader = SubResource("Shader_eglj5")
+shader_parameter/albedo = Color(0.9901138, 0.9903025, 0.9682656, 1)
+shader_parameter/texture_albedo = ExtResource("4_ikmqb")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_j27to")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6000000285
+shader_parameter/cutoff_2 = 0.0
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_yp340"]
+render_priority = 0
+shader = ExtResource("5_0y0mo")
+shader_parameter/outline_thickness = 0.0010000000475
+shader_parameter/outline_color = Color(0, 0, 0, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ssgsk"]
+render_priority = 0
+next_pass = SubResource("ShaderMaterial_yp340")
+shader = SubResource("Shader_eglj5")
+shader_parameter/albedo = Color(0.9901138, 0.9903025, 0.9682656, 1)
+shader_parameter/texture_albedo = ExtResource("4_ikmqb")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_j27to")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6000000285
+shader_parameter/cutoff_2 = 0.0
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_6rcni"]
+render_priority = 0
+shader = ExtResource("7_uxrf1")
+shader_parameter/outline_thickness = 1.0
+shader_parameter/outline_color = Color(0, 0, 0, 1)
+
+[sub_resource type="Shader" id="Shader_u5s30"]
+code = "shader_type spatial;
+render_mode specular_toon;
+
+uniform vec4 albedo : source_color = vec4(1.0);
+uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform sampler2D noise_texture : filter_nearest, repeat_enable;
+uniform float noise_scale = 5.0;
+
+uniform float cutoff_1 : hint_range(0.0, 1.0) = 0.6;
+uniform float cutoff_2 : hint_range(0.0, 1.0) = 0.3;
+
+uniform vec4 color_luz : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform vec4 color_medio : source_color = vec4(0.6, 0.6, 0.7, 1.0);
+uniform vec4 color_sombra : source_color = vec4(0.2, 0.2, 0.3, 1.0);
+
+varying vec2 vertex_uv;
+
+void vertex() {
+    vertex_uv = UV;
+}
+
+void fragment() {
+    vec4 tex = texture(texture_albedo, vertex_uv);
+    ALBEDO = albedo.rgb * tex.rgb;
+}
+
+void light() {
+    float NdotL = dot(NORMAL, LIGHT);
+    float noise = texture(noise_texture, vertex_uv * noise_scale).r;
+    
+    float adj_cut1 = cutoff_1 + (noise - 0.5) * 0.25;
+    float adj_cut2 = cutoff_2 + (noise - 0.5) * 0.25;
+    
+    vec3 final_shading = color_sombra.rgb;
+    if (NdotL > adj_cut1) {
+        final_shading = color_luz.rgb;
+    } else if (NdotL > adj_cut2) {
+        final_shading = color_medio.rgb;
+    }
+    
+    DIFFUSE_LIGHT = LIGHT_COLOR * final_shading * ATTENUATION;
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_0nvnd"]
+frequency = 0.1
+offset = Vector3(717.95, -358.97, 150)
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_urmyh"]
+width = 997
+height = 100
+noise = SubResource("FastNoiseLite_0nvnd")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_je0qh"]
+render_priority = 0
+next_pass = SubResource("ShaderMaterial_6rcni")
+shader = SubResource("Shader_u5s30")
+shader_parameter/albedo = Color(0.7835232, 0.78352356, 0.78352314, 1)
+shader_parameter/texture_albedo = ExtResource("5_fiope")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_urmyh")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.3930000186675
+shader_parameter/cutoff_2 = 0.3
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="Shader" id="Shader_l3boe"]
+code = "shader_type spatial;
+render_mode specular_toon;
+
+uniform vec4 albedo : source_color = vec4(1.0);
+uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform sampler2D noise_texture : filter_nearest, repeat_enable;
+uniform float noise_scale = 5.0;
+
+uniform float cutoff_1 : hint_range(0.0, 1.0) = 0.6;
+uniform float cutoff_2 : hint_range(0.0, 1.0) = 0.3;
+
+uniform vec4 color_luz : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform vec4 color_medio : source_color = vec4(0.6, 0.6, 0.7, 1.0);
+uniform vec4 color_sombra : source_color = vec4(0.2, 0.2, 0.3, 1.0);
+
+varying vec2 vertex_uv;
+
+void vertex() {
+    vertex_uv = UV;
+}
+
+void fragment() {
+    vec4 tex = texture(texture_albedo, vertex_uv);
+    ALBEDO = albedo.rgb * tex.rgb;
+}
+
+void light() {
+    float NdotL = dot(NORMAL, LIGHT);
+    float noise = texture(noise_texture, vertex_uv * noise_scale).r;
+    
+    float adj_cut1 = cutoff_1 + (noise - 0.5) * 0.25;
+    float adj_cut2 = cutoff_2 + (noise - 0.5) * 0.25;
+    
+    vec3 final_shading = color_sombra.rgb;
+    if (NdotL > adj_cut1) {
+        final_shading = color_luz.rgb;
+    } else if (NdotL > adj_cut2) {
+        final_shading = color_medio.rgb;
+    }
+    
+    DIFFUSE_LIGHT = LIGHT_COLOR * final_shading * ATTENUATION;
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_dyq5p"]
+frequency = 0.1
+offset = Vector3(717.95, -358.97, 150)
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_meoeu"]
+width = 997
+height = 100
+noise = SubResource("FastNoiseLite_dyq5p")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_1cs71"]
+render_priority = 0
+next_pass = ExtResource("2_ycyxq")
+shader = SubResource("Shader_l3boe")
+shader_parameter/albedo = Color(0.7835232, 0.78352356, 0.78352314, 1)
+shader_parameter/texture_albedo = ExtResource("5_fiope")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_meoeu")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6
+shader_parameter/cutoff_2 = 0.3
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_riowr"]
+height = 2.215332
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_620pr"]
+size = Vector3(0.37457275, 0.20617676, 1.7962646)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_v7qj6"]
+size = Vector3(0.3581543, 0.15405273, 1.3662109)
+
+[node name="libreria_naturaleza" type="Node3D" unique_id=1172066521]
+
+[node name="naturaleza1" parent="." unique_id=1143488468 instance=ExtResource("1_77kro")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0)
+
+[node name="tronco" parent="naturaleza1" index="1" unique_id=836766001]
+surface_material_override/0 = SubResource("ShaderMaterial_jw7of")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="naturaleza1/tronco" index="0" unique_id=273616343]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="naturaleza1/tronco/StaticBody3D" unique_id=1302571935]
+transform = Transform3D(0.99981534, 0.019146165, 0.0016197562, -0.019200819, 0.9987315, 0.04654795, -0.0007264614, -0.046570547, 0.9989147, 4.656613e-10, -0.0009081997, -2.3283064e-10)
+shape = SubResource("CapsuleShape3D_eglj5")
+
+[node name="BirchTree_3" parent="naturaleza1" index="3" unique_id=238301092]
+surface_material_override/0 = SubResource("ShaderMaterial_dyq5p")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="naturaleza1/BirchTree_3" index="0" unique_id=1558705282]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="naturaleza1/BirchTree_3/StaticBody3D" unique_id=715555076]
+transform = Transform3D(1, 8.6188265e-08, -8.731149e-11, -2.0372681e-10, -1.899898e-07, -1, -4.311005e-10, 1.0000066, -5.5879354e-08, 5.9604645e-08, -2.3283064e-09, 0.015393131)
+shape = SubResource("CylinderShape3D_urmyh")
+
+[node name="BirchTree_5" parent="naturaleza1" index="4" unique_id=1355227744]
+surface_material_override/0 = SubResource("ShaderMaterial_hhr7h")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="naturaleza1/BirchTree_5" index="0" unique_id=2045923885]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="naturaleza1/BirchTree_5/StaticBody3D" unique_id=1374262222]
+transform = Transform3D(1, 1.4488069e-07, -8.731149e-11, -2.0372681e-10, -2.8871e-07, -1, -4.311005e-10, 1.0000112, -5.5879354e-08, 4.4703484e-08, -4.773028e-09, 0.020904733)
+shape = SubResource("CylinderShape3D_yp340")
+
+[node name="BirchTree_4" parent="naturaleza1" index="5" unique_id=1949342877]
+surface_material_override/0 = SubResource("ShaderMaterial_0nvnd")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="naturaleza1/BirchTree_4" index="0" unique_id=372048661]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="naturaleza1/BirchTree_4/StaticBody3D" unique_id=954623779]
+transform = Transform3D(1, 2.1009964e-07, -8.731149e-11, -2.0372681e-10, -3.8929284e-07, -1, -4.311005e-10, 1.0000166, -5.5879354e-08, 7.4505806e-08, -6.6356733e-09, 0.011987587)
+shape = SubResource("CylinderShape3D_l3boe")
+
+[node name="BirchTree_1" parent="naturaleza1" index="6" unique_id=959343735]
+surface_material_override/0 = SubResource("ShaderMaterial_meoeu")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="naturaleza1/BirchTree_1" index="0" unique_id=530349751]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="naturaleza1/BirchTree_1/StaticBody3D" unique_id=293093183]
+transform = Transform3D(1, 2.3525627e-07, -8.731149e-11, -2.0372681e-10, -4.209578e-07, -1, -4.311005e-10, 1.0000184, -5.5879354e-08, 8.940697e-08, -6.600749e-08, 0.015303994)
+shape = SubResource("CylinderShape3D_giv87")
+
+[node name="BirchTree_2" parent="naturaleza1" index="7" unique_id=814715851]
+surface_material_override/0 = SubResource("ShaderMaterial_riowr")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="naturaleza1/BirchTree_2" index="0" unique_id=143702193]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="naturaleza1/BirchTree_2/StaticBody3D" unique_id=864496093]
+transform = Transform3D(1, 2.3525627e-07, -8.731149e-11, -2.0372681e-10, -4.209578e-07, -1, -4.311005e-10, 1.0000184, -5.5879354e-08, 1.4901161e-08, -1.6298145e-09, 0.015659226)
+shape = SubResource("CylinderShape3D_620pr")
+
+[node name="DeadTree_10" parent="naturaleza1" index="12" unique_id=688023426]
+surface_material_override/0 = SubResource("ShaderMaterial_v7qj6")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="naturaleza1/DeadTree_10" index="0" unique_id=1309135934]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="naturaleza1/DeadTree_10/StaticBody3D" unique_id=445751508]
+transform = Transform3D(0.100000024, 0, 0, 0, -4.3712056e-09, -0.10000128, 0, 0.10000128, -4.3712056e-09, 0, -5.94952e-10, 0.013610962)
+shape = SubResource("CylinderShape3D_eglj5")
+
+[node name="DeadTree_9" parent="naturaleza1" index="13" unique_id=809881936]
+surface_material_override/0 = SubResource("ShaderMaterial_riq3f")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="naturaleza1/DeadTree_9" index="0" unique_id=1287353243]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="naturaleza1/DeadTree_9/StaticBody3D" unique_id=1358080962]
+transform = Transform3D(1.0000005, 0, 0, 0, -4.3711424e-08, -1.0000007, 0, 1.0000007, -4.3711424e-08, 0, -4.039248e-10, 0.009240726)
+shape = SubResource("CylinderShape3D_j27to")
+
+[node name="DeadTree_8" parent="naturaleza1" index="14" unique_id=2093496778]
+surface_material_override/0 = SubResource("ShaderMaterial_k7gid")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="naturaleza1/DeadTree_8" index="0" unique_id=336567920]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="naturaleza1/DeadTree_8/StaticBody3D" unique_id=1380160192]
+transform = Transform3D(1.0000005, 0, 0, 0, -4.3711424e-08, -1.0000007, 0, 1.0000007, -4.3711424e-08, 0, -5.1325e-10, 0.011741592)
+shape = SubResource("CylinderShape3D_ssgsk")
+
+[node name="DeadTree_7" parent="naturaleza1" index="15" unique_id=804914954]
+surface_material_override/0 = SubResource("ShaderMaterial_8cmtg")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="naturaleza1/DeadTree_7" index="0" unique_id=667274304]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="naturaleza1/DeadTree_7/StaticBody3D" unique_id=293891668]
+transform = Transform3D(1.0000005, 0, 0, 0, -4.3711424e-08, -1.0000007, 0, 1.0000007, -4.3711424e-08, 0, -5.644266e-10, 0.012912609)
+shape = SubResource("CylinderShape3D_6rcni")
+
+[node name="DeadTree_6" parent="naturaleza1" index="16" unique_id=62971589]
+surface_material_override/0 = SubResource("ShaderMaterial_u5s30")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="naturaleza1/DeadTree_6" index="0" unique_id=135223011]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="naturaleza1/DeadTree_6/StaticBody3D" unique_id=1724964069]
+transform = Transform3D(1.0000005, 0, 0, 0, -4.3711424e-08, -1.0000007, 0, 1.0000007, -4.3711424e-08, 0, -4.491715e-10, 0.010275883)
+shape = SubResource("CylinderShape3D_dyq5p")
+
+[node name="Grass_Large_Extruded" parent="naturaleza1" index="30" unique_id=1364796100]
+surface_material_override/0 = SubResource("ShaderMaterial_eglj5")
+
+[node name="Grass_Small" parent="naturaleza1" index="31" unique_id=1221817446]
+surface_material_override/0 = SubResource("ShaderMaterial_ssgsk")
+
+[node name="sakura" parent="naturaleza1" index="32" unique_id=1030080689]
+transform = Transform3D(0.03830719, 0, 0, 0, 0.03830719, 0, 0, 0, 0.03830719, -30.175108, 0.18761863, -0.6825708)
+visible = false
+surface_material_override/0 = SubResource("ShaderMaterial_je0qh")
+
+[node name="Pine_2" parent="naturaleza1" index="34" unique_id=1312232023]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.747765, 0.38808686, 0)
+surface_material_override/0 = SubResource("ShaderMaterial_1cs71")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="naturaleza1/Pine_2" index="0" unique_id=255879567]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="naturaleza1/Pine_2/StaticBody3D" unique_id=1581111905]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9860839, 0)
+shape = SubResource("CylinderShape3D_riowr")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="naturaleza1/Pine_2/StaticBody3D" unique_id=749603039]
+transform = Transform3D(0.98481077, 0, 0.17363098, -0.039766792, 0.97341925, 0.22555171, -0.16901574, -0.2290305, 0.9586338, 0.06869507, 1.0584741, 0.59604573)
+shape = SubResource("BoxShape3D_620pr")
+
+[node name="CollisionShape3D3" type="CollisionShape3D" parent="naturaleza1/Pine_2/StaticBody3D" unique_id=819120369]
+transform = Transform3D(0.9997745, 0, -0.021239063, 0.0060585155, 0.9584521, 0.28518912, 0.020356625, -0.2852535, 0.958236, -0.0059814453, 1.312676, -1.0520841)
+shape = SubResource("BoxShape3D_v7qj6")
+
+[editable path="naturaleza1"]

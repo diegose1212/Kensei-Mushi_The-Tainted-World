@@ -1,0 +1,557 @@
+[gd_scene format=4 uid="uid://c2x37ur7o8w5l"]
+
+[ext_resource type="PackedScene" uid="uid://db2s2w57pi1w3" path="res://personaje/jugador.tscn" id="1_nae1r"]
+[ext_resource type="PackedScene" uid="uid://dh522njrwn2kl" path="res://assets/suelos/suelos1.glb" id="1_pk1xo"]
+[ext_resource type="Texture2D" uid="uid://clehy3nlrywq2" path="res://assets/suelos/texturas/suelos1_suelo_largo Base Color.png" id="3_ep5ra"]
+[ext_resource type="Material" uid="uid://c0vomi48cyksr" path="res://shaders/outlines/outline_delgado.tres" id="3_j72h2"]
+[ext_resource type="Texture2D" uid="uid://bpj3wucms84uc" path="res://assets/suelos/texturas/suelos1_suelo_bloque Base Color.png" id="4_4426l"]
+[ext_resource type="Texture2D" uid="uid://jcq6yqoppvv7" path="res://assets/suelos/texturas/suelos1_pasarela Base Color.png" id="5_n8hw0"]
+[ext_resource type="Texture2D" uid="uid://cravghu20ttqv" path="res://assets/suelos/texturas/suelos1_suelo_bloque.png" id="6_4426l"]
+[ext_resource type="Texture2D" uid="uid://5b8ttebo4mgk" path="res://assets/suelos/texturas/suelos1_piedra_grande Base Color.png" id="6_j72h2"]
+[ext_resource type="Texture2D" uid="uid://bmu081c2hn6p5" path="res://assets/suelos/texturas/suelos1_piedra_pequeña Base Color.png" id="8_3b6kl"]
+[ext_resource type="Texture2D" uid="uid://u5igssagb2nb" path="res://assets/suelos/texturas/suelos1_piedras Base Color.png" id="8_ep5ra"]
+[ext_resource type="Texture2D" uid="uid://tnav5y4vn27g" path="res://assets/suelos/texturas/suelos1_nenufar_lienzo.png" id="10_yrihv"]
+
+[sub_resource type="Shader" id="Shader_yrihv"]
+code = "shader_type spatial;
+render_mode specular_toon;
+
+uniform vec4 albedo : source_color = vec4(1.0);
+uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform sampler2D noise_texture : filter_nearest, repeat_enable;
+uniform float noise_scale = 5.0;
+
+uniform float cutoff_1 : hint_range(0.0, 1.0) = 0.6;
+uniform float cutoff_2 : hint_range(0.0, 1.0) = 0.3;
+
+uniform vec4 color_luz : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform vec4 color_medio : source_color = vec4(0.6, 0.6, 0.7, 1.0);
+uniform vec4 color_sombra : source_color = vec4(0.2, 0.2, 0.3, 1.0);
+
+varying vec2 vertex_uv;
+
+void vertex() {
+    vertex_uv = UV;
+}
+
+void fragment() {
+    vec4 tex = texture(texture_albedo, vertex_uv);
+    ALBEDO = albedo.rgb * tex.rgb;
+}
+
+void light() {
+    float NdotL = dot(NORMAL, LIGHT);
+    float noise = texture(noise_texture, vertex_uv * noise_scale).r;
+    
+    float adj_cut1 = cutoff_1 + (noise - 0.5) * 0.25;
+    float adj_cut2 = cutoff_2 + (noise - 0.5) * 0.25;
+    
+    vec3 final_shading = color_sombra.rgb;
+    if (NdotL > adj_cut1) {
+        final_shading = color_luz.rgb;
+    } else if (NdotL > adj_cut2) {
+        final_shading = color_medio.rgb;
+    }
+    
+    DIFFUSE_LIGHT = LIGHT_COLOR * final_shading * ATTENUATION;
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_nae1r"]
+frequency = 0.1
+offset = Vector3(717.95, -358.97, 150)
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_ll4ng"]
+width = 1000
+height = 100
+noise = SubResource("FastNoiseLite_nae1r")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_yrihv"]
+render_priority = 0
+next_pass = ExtResource("3_j72h2")
+shader = SubResource("Shader_yrihv")
+shader_parameter/albedo = Color(0.88235295, 0.8784314, 0.65882355, 1)
+shader_parameter/texture_albedo = ExtResource("3_ep5ra")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_ll4ng")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6
+shader_parameter/cutoff_2 = 0.50000002375
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_yrihv"]
+size = Vector3(1.9771729, 1.0759277, 5.609619)
+
+[sub_resource type="Shader" id="Shader_eyo7c"]
+code = "shader_type spatial;
+render_mode specular_toon;
+
+uniform vec4 albedo : source_color = vec4(1.0);
+uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform sampler2D noise_texture : filter_nearest, repeat_enable;
+uniform float noise_scale = 5.0;
+
+uniform float cutoff_1 : hint_range(0.0, 1.0) = 0.6;
+uniform float cutoff_2 : hint_range(0.0, 1.0) = 0.3;
+
+uniform vec4 color_luz : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform vec4 color_medio : source_color = vec4(0.6, 0.6, 0.7, 1.0);
+uniform vec4 color_sombra : source_color = vec4(0.2, 0.2, 0.3, 1.0);
+
+varying vec2 vertex_uv;
+
+void vertex() {
+    vertex_uv = UV;
+}
+
+void fragment() {
+    vec4 tex = texture(texture_albedo, vertex_uv);
+    ALBEDO = albedo.rgb * tex.rgb;
+}
+
+void light() {
+    float NdotL = dot(NORMAL, LIGHT);
+    float noise = texture(noise_texture, vertex_uv * noise_scale).r;
+    
+    float adj_cut1 = cutoff_1 + (noise - 0.5) * 0.25;
+    float adj_cut2 = cutoff_2 + (noise - 0.5) * 0.25;
+    
+    vec3 final_shading = color_sombra.rgb;
+    if (NdotL > adj_cut1) {
+        final_shading = color_luz.rgb;
+    } else if (NdotL > adj_cut2) {
+        final_shading = color_medio.rgb;
+    }
+    
+    DIFFUSE_LIGHT = LIGHT_COLOR * final_shading * ATTENUATION;
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_emw85"]
+frequency = 0.1
+offset = Vector3(717.95, -358.97, 150)
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_v0c6w"]
+width = 1000
+height = 100
+noise = SubResource("FastNoiseLite_emw85")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ep5ra"]
+render_priority = 0
+next_pass = ExtResource("3_j72h2")
+shader = SubResource("Shader_eyo7c")
+shader_parameter/albedo = Color(0.880768, 0.8767404, 0.6576322, 1)
+shader_parameter/texture_albedo = ExtResource("4_4426l")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_v0c6w")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6000000285
+shader_parameter/cutoff_2 = 0.50000002375
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_3b6kl"]
+size = Vector3(2.2343292, 1.010437, 2.1188965)
+
+[sub_resource type="Shader" id="Shader_8x4x7"]
+code = "shader_type spatial;
+render_mode specular_toon;
+
+uniform vec4 albedo : source_color = vec4(1.0);
+uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform sampler2D noise_texture : filter_nearest, repeat_enable;
+uniform float noise_scale = 5.0;
+
+uniform float cutoff_1 : hint_range(0.0, 1.0) = 0.6;
+uniform float cutoff_2 : hint_range(0.0, 1.0) = 0.3;
+
+uniform vec4 color_luz : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform vec4 color_medio : source_color = vec4(0.6, 0.6, 0.7, 1.0);
+uniform vec4 color_sombra : source_color = vec4(0.2, 0.2, 0.3, 1.0);
+
+varying vec2 vertex_uv;
+
+void vertex() {
+    vertex_uv = UV;
+}
+
+void fragment() {
+    vec4 tex = texture(texture_albedo, vertex_uv);
+    ALBEDO = albedo.rgb * tex.rgb;
+}
+
+void light() {
+    float NdotL = dot(NORMAL, LIGHT);
+    float noise = texture(noise_texture, vertex_uv * noise_scale).r;
+    
+    float adj_cut1 = cutoff_1 + (noise - 0.5) * 0.25;
+    float adj_cut2 = cutoff_2 + (noise - 0.5) * 0.25;
+    
+    vec3 final_shading = color_sombra.rgb;
+    if (NdotL > adj_cut1) {
+        final_shading = color_luz.rgb;
+    } else if (NdotL > adj_cut2) {
+        final_shading = color_medio.rgb;
+    }
+    
+    DIFFUSE_LIGHT = LIGHT_COLOR * final_shading * ATTENUATION;
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_ryehj"]
+frequency = 0.1
+offset = Vector3(717.95, -358.97, 150)
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_qolj0"]
+width = 1000
+height = 100
+noise = SubResource("FastNoiseLite_ryehj")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_j72h2"]
+render_priority = 0
+next_pass = ExtResource("3_j72h2")
+shader = SubResource("Shader_8x4x7")
+shader_parameter/albedo = Color(0.88235295, 0.8784314, 0.65882355, 1)
+shader_parameter/texture_albedo = ExtResource("5_n8hw0")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_qolj0")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6
+shader_parameter/cutoff_2 = 0.50000002375
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_nae1r"]
+size = Vector3(11.20697, 1.4287109, 11.970459)
+
+[sub_resource type="Shader" id="Shader_m54l4"]
+code = "shader_type spatial;
+render_mode specular_toon;
+
+uniform vec4 albedo : source_color = vec4(1.0);
+uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform sampler2D noise_texture : filter_nearest, repeat_enable;
+uniform float noise_scale = 5.0;
+
+uniform float cutoff_1 : hint_range(0.0, 1.0) = 0.6;
+uniform float cutoff_2 : hint_range(0.0, 1.0) = 0.3;
+
+uniform vec4 color_luz : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform vec4 color_medio : source_color = vec4(0.6, 0.6, 0.7, 1.0);
+uniform vec4 color_sombra : source_color = vec4(0.2, 0.2, 0.3, 1.0);
+
+varying vec2 vertex_uv;
+
+void vertex() {
+    vertex_uv = UV;
+}
+
+void fragment() {
+    vec4 tex = texture(texture_albedo, vertex_uv);
+    ALBEDO = albedo.rgb * tex.rgb;
+}
+
+void light() {
+    float NdotL = dot(NORMAL, LIGHT);
+    float noise = texture(noise_texture, vertex_uv * noise_scale).r;
+    
+    float adj_cut1 = cutoff_1 + (noise - 0.5) * 0.25;
+    float adj_cut2 = cutoff_2 + (noise - 0.5) * 0.25;
+    
+    vec3 final_shading = color_sombra.rgb;
+    if (NdotL > adj_cut1) {
+        final_shading = color_luz.rgb;
+    } else if (NdotL > adj_cut2) {
+        final_shading = color_medio.rgb;
+    }
+    
+    DIFFUSE_LIGHT = LIGHT_COLOR * final_shading * ATTENUATION;
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_iwwso"]
+frequency = 0.1
+offset = Vector3(717.95, -358.97, 150)
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_dvrnt"]
+width = 1000
+height = 100
+noise = SubResource("FastNoiseLite_iwwso")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_3b6kl"]
+render_priority = 0
+next_pass = ExtResource("3_j72h2")
+shader = SubResource("Shader_m54l4")
+shader_parameter/albedo = Color(0.88235295, 0.8784314, 0.65882355, 1)
+shader_parameter/texture_albedo = ExtResource("6_4426l")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_dvrnt")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6000000285
+shader_parameter/cutoff_2 = 0.50000002375
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ll4ng"]
+size = Vector3(6.8308716, 1.0786133, 6.1712646)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7tmt2"]
+resource_name = "Material.005"
+cull_mode = 2
+albedo_texture = ExtResource("6_j72h2")
+metallic = 1.0
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_n81oh"]
+_surfaces = [{
+"aabb": AABB(-1.3269523, -0.7032918, -1.0038414, 2.5371685, 1.9024354, 2.3256269),
+"format": 34896613377,
+"index_count": 180,
+"index_data": PackedByteArray("AAABAAIAAgADAAAAAwAEAAAAAgAFAAMAAAAEAAYAAAAGAAEAAwAHAAQABQAHAAMACAAFAAIAAgABAAgACQAHAAUACAAKAAUACgAJAAUAAQALAAgACAAMAAoACAALAAwAAQANAAsAAQAOAA0ABgAOAAEADQAPAAsADQAOAA8ACwAQAAwADwAQAAsADAARAAoADAAQABEADwASABAAEAASABEADgATAA8ADwATABIADgAUABMABgAUAA4AEwAVABIABgAWABQAFAAXABMAFwAVABMAFgAXABQABAAWAAYAFQAXABgAFQAYABIAGQAXABYABAAaABYAGgAZABYABwAaAAQAGwAXABkAGwAZABoAGAAXABsABwAcABoAHAAbABoACQAcAAcAHQAbABwACQAdABwAGAAbAB0AHgAdAAkACgAeAAkAEQAeAAoAHgAfAB0AEQAfAB4AHwAYAB0AEQASAB8AEgAYAB8A"),
+"name": "Material.005",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 32,
+"vertex_data": PackedByteArray("Nd/XFi2lAAC17WQEk2UAAHSh0QrGjwAA0kmgGv//AACYhYRt4vIAAMAl+Bdt0QAA9/uqWPaPAAANKRdTrvUAAD5lAAC1QwAAAABkYY6kAADYLyoZMzcAAMmulQ5cFQAAs2cIH6UOAAB66zwSBzUAAP//c1VwSwAAv9O9WXESAADFhvpeAAAAAGg+NVZoCwAAxJjzmxgMAACb2VKulTQAAKvzKqEpbAAAGpaG2PE1AABsw5isPq8AAB2r+uk1bQAAZkgc8ZlGAAALlPHZlKcAAGdgGrUh1wAAQUD//56NAACGGTm1D74AAHsJ7dNBaAAAKweoaydBAACJHdi7aigAAA==")
+}]
+blend_shape_mode = 0
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_4426l"]
+resource_name = "suelos1_Icosphere"
+_surfaces = [{
+"aabb": AABB(-1.3269523, -0.7032918, -1.0038414, 2.5371685, 1.9024354, 2.3256269),
+"attribute_data": PackedByteArray("WmUM0o1gPLaugs7KroLOyo1gPLb1oEms7KPBOACMaipNp+0hTacEh7+JKHDso8E4Lv4QXazZKG5dxWBRlw3CX8AZA3hQAll1+xtyIvIwhTaPEm8+7KPBOL+JKHAAjGoqTacEh1GTfJG/iShwLv4QXaD983is2Shulw3CX7In31nAGQN4+xtyIqg0dh/yMIU2PMbziPXM/KXkrqCG2iWu/dUtWei5Q6D7+xarljIqvreDBwusMiq+t4cXwsmDBwusgwcLrIcXwslQAsjNhxfCyTIqvrfVLVnohxfCydUtWehQAsjNMj7lV+BMEoGuNcuP1S1Z6DIqvreRS6jf1S1Z6JFLqN+5Q6D7XOjrmfXM/KU8xvOIkUuo3zIqvrdeQ2K2kUuo315DYrbsWybCt2/pd41gf1mCcFpJXkNitjIqvrcsOmGfLDphnzIqvrf7FquWUAJslPsWq5aDBwusqDR2H+BMMDvyMIU28jCFNuBMMDsyPuVXsiffWTI+5VfAGQN4wBkDeDI+5VeuNcuPoP3zeC7+NJZc6OuZoP3zeFzo65ms2ShurNkoblzo65k8xvOIi7MFYzzG84jkrqCGUZN8kbdv6Xe/iShwv4kocLdv6XeCcFpJv4kocIJwWkkAjGoqAIxqKoJwWkkwcaQl8jCFNjI+5VeyJ99Z8jCFNrIn31mPEm8+jxJvPrIn31mXDcJfwBkDeK41y48/F4yPwBkDeD8XjI9QAll1rNkobjzG84iLswVjrNkobouzBWNdxWBRXcVgUYuzBWNurKROAIxqKjBxpCXliWwWAIxqKuWJbBZNp+0hTaftIeWJbBY6oAEWjWA8thBj4KE2gF2WjWA8tjaAXZb1oEms9aBJrDaAXZZuoR2W9aBJrG6hHZYjuh+p9aBJrCO6H6kjugfr9aBJrCO6B+uugs7KroLOyiO6B+v5p679roLOyvmnrv1aZQzS"),
+"format": 34896613399,
+"index_count": 180,
+"index_data": PackedByteArray("AAABAAIAAwAEAAUABgAHAAgACQAKAAsADAANAA4ADwAQABEAEgATABQAFQAWABcAGAAZABoAGwAcAB0AHgAfACAAIQAiACMAJAAlACYAJwAoACkAKgArACwALQAuAC8AMAAxADIAMwA0ADUANgA3ADgAOQA6ADsAPAA9AD4APwBAAEEAQgBDAEQARQBGAEcASABJAEoASwBMAE0ATgBPAFAAUQBSAFMAVABVAFYAVwBYAFkAWgBbAFwAXQBeAF8AYABhAGIAYwBkAGUAZgBnAGgAaQBqAGsAbABtAG4AbwBwAHEAcgBzAHQAdQB2AHcAeAB5AHoAewB8AH0AfgB/AIAAgQCCAIMAhACFAIYAhwCIAIkAigCLAIwAjQCOAI8AkACRAJIAkwCUAJUAlgCXAJgAmQCaAJsAnACdAJ4AnwCgAKEAogCjAKQApQCmAKcAqACpAKoAqwCsAK0ArgCvALAAsQCyALMA"),
+"material": SubResource("StandardMaterial3D_7tmt2"),
+"name": "Material.005",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 180,
+"vertex_data": PackedByteArray("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")
+}]
+blend_shape_mode = 0
+shadow_mesh = SubResource("ArrayMesh_n81oh")
+
+[sub_resource type="Shader" id="Shader_2wv6a"]
+code = "shader_type spatial;
+render_mode specular_toon;
+
+uniform vec4 albedo : source_color = vec4(1.0);
+uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform sampler2D noise_texture : filter_nearest, repeat_enable;
+uniform float noise_scale = 5.0;
+
+uniform float cutoff_1 : hint_range(0.0, 1.0) = 0.6;
+uniform float cutoff_2 : hint_range(0.0, 1.0) = 0.3;
+
+uniform vec4 color_luz : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform vec4 color_medio : source_color = vec4(0.6, 0.6, 0.7, 1.0);
+uniform vec4 color_sombra : source_color = vec4(0.2, 0.2, 0.3, 1.0);
+
+varying vec2 vertex_uv;
+
+void vertex() {
+    vertex_uv = UV;
+}
+
+void fragment() {
+    vec4 tex = texture(texture_albedo, vertex_uv);
+    ALBEDO = albedo.rgb * tex.rgb;
+}
+
+void light() {
+    float NdotL = dot(NORMAL, LIGHT);
+    float noise = texture(noise_texture, vertex_uv * noise_scale).r;
+    
+    float adj_cut1 = cutoff_1 + (noise - 0.5) * 0.25;
+    float adj_cut2 = cutoff_2 + (noise - 0.5) * 0.25;
+    
+    vec3 final_shading = color_sombra.rgb;
+    if (NdotL > adj_cut1) {
+        final_shading = color_luz.rgb;
+    } else if (NdotL > adj_cut2) {
+        final_shading = color_medio.rgb;
+    }
+    
+    DIFFUSE_LIGHT = LIGHT_COLOR * final_shading * ATTENUATION;
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_jm2i3"]
+frequency = 0.1
+offset = Vector3(717.95, -358.97, 150)
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_aq2gh"]
+width = 1000
+height = 100
+noise = SubResource("FastNoiseLite_jm2i3")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_nae1r"]
+render_priority = 0
+next_pass = ExtResource("3_j72h2")
+shader = SubResource("Shader_2wv6a")
+shader_parameter/albedo = Color(0.9901138, 0.9903025, 0.9682656, 1)
+shader_parameter/texture_albedo = ExtResource("6_j72h2")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_aq2gh")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6
+shader_parameter/cutoff_2 = 0.50000002375
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_eyo7c"]
+size = Vector3(1.9555969, 1.3667603, 1.7587891)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ll4ng"]
+render_priority = 0
+next_pass = ExtResource("3_j72h2")
+shader = SubResource("Shader_2wv6a")
+shader_parameter/albedo = Color(0.9901138, 0.9903025, 0.9682656, 1)
+shader_parameter/texture_albedo = ExtResource("8_3b6kl")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_aq2gh")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6
+shader_parameter/cutoff_2 = 0.50000002375
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_v0c6w"]
+size = Vector3(2.335205, 1.7178345, 2.116272)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_eyo7c"]
+render_priority = 0
+next_pass = ExtResource("3_j72h2")
+shader = SubResource("Shader_2wv6a")
+shader_parameter/albedo = Color(0.9901138, 0.9903025, 0.9682656, 1)
+shader_parameter/texture_albedo = ExtResource("8_ep5ra")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_aq2gh")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6
+shader_parameter/cutoff_2 = 0.50000002375
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_8x4x7"]
+size = Vector3(0.84220886, 0.39794922, 2.0266418)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ryehj"]
+size = Vector3(1.569397, 0.68951416, 1.7888184)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_v0c6w"]
+render_priority = 0
+next_pass = ExtResource("3_j72h2")
+shader = SubResource("Shader_2wv6a")
+shader_parameter/albedo = Color(0.8236379, 0.8668741, 0.47668463, 1)
+shader_parameter/texture_albedo = ExtResource("10_yrihv")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_aq2gh")
+shader_parameter/noise_scale = 3.0
+shader_parameter/cutoff_1 = 0.578000027455
+shader_parameter/cutoff_2 = 0.3470000164825
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_yrihv"]
+radius = 1.0014648
+
+[node name="libreria_pantano" type="Node3D" unique_id=408606140]
+
+[node name="Jugador" parent="." unique_id=225331804 instance=ExtResource("1_nae1r")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.6659856, 0)
+
+[node name="suelos1" parent="." unique_id=1842720458 instance=ExtResource("1_pk1xo")]
+
+[node name="suelo_largo" parent="suelos1" index="0" unique_id=1155502737]
+surface_material_override/0 = SubResource("ShaderMaterial_yrihv")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="suelos1/suelo_largo" index="0" unique_id=968170328]
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="suelos1/suelo_largo/StaticBody3D" unique_id=478047212]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00079346215, 0.49377453, 1.8206787)
+shape = SubResource("BoxShape3D_yrihv")
+
+[node name="suelo_bloque" parent="suelos1" index="1" unique_id=602992608]
+surface_material_override/0 = SubResource("ShaderMaterial_ep5ra")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="suelos1/suelo_bloque" index="0" unique_id=506279005]
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="suelos1/suelo_bloque/StaticBody3D" unique_id=1675509253]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.012504101, 0.49807745, -0.03161622)
+shape = SubResource("BoxShape3D_3b6kl")
+
+[node name="pasarela" parent="suelos1" index="2" unique_id=1606543940]
+surface_material_override/0 = SubResource("ShaderMaterial_j72h2")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="suelos1/pasarela" index="0" unique_id=220941212]
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="suelos1/pasarela/StaticBody3D" unique_id=106258558]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.004972458, -0.21435547, -0.56018114)
+shape = SubResource("BoxShape3D_nae1r")
+
+[node name="suelo_bloque_001" parent="suelos1" index="3" unique_id=1496695516]
+surface_material_override/0 = SubResource("ShaderMaterial_3b6kl")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="suelos1/suelo_bloque_001" index="0" unique_id=892549782]
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="suelos1/suelo_bloque_001/StaticBody3D" unique_id=42531063]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3847957, 0.5163574, 1.8703003)
+shape = SubResource("BoxShape3D_ll4ng")
+
+[node name="piedra_grande" parent="suelos1" index="4" unique_id=317306340]
+mesh = SubResource("ArrayMesh_4426l")
+surface_material_override/0 = SubResource("ShaderMaterial_nae1r")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="suelos1/piedra_grande" index="0" unique_id=875460026]
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="suelos1/piedra_grande/StaticBody3D" unique_id=1940838306]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2516327, 0.22787476, -0.044433594)
+shape = SubResource("BoxShape3D_eyo7c")
+
+[node name="piedra_pequeña" parent="suelos1" index="5" unique_id=1194898404]
+transform = Transform3D(0.3226367, 9.141201e-05, 7.510841e-05, -9.138778e-05, 0.3226367, -0.000104233535, -7.513788e-05, 0.0001042123, 0.3226367, 15.528606, 2.4802694, -0.7370399)
+surface_material_override/0 = SubResource("ShaderMaterial_ll4ng")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="suelos1/piedra_pequeña" index="0" unique_id=1248583052]
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="suelos1/piedra_pequeña/StaticBody3D" unique_id=1748274156]
+transform = Transform3D(1, -7.693757e-11, 0, 1.04734e-11, 1, -2.910383e-11, -2.910383e-11, 1.4551915e-10, 1, -0.078948975, 0.18319702, 0.1656189)
+shape = SubResource("BoxShape3D_v0c6w")
+
+[node name="piedras" parent="suelos1" index="6" unique_id=1475154692]
+surface_material_override/0 = SubResource("ShaderMaterial_eyo7c")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="suelos1/piedras" index="0" unique_id=356458080]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="suelos1/piedras/StaticBody3D" unique_id=1665579772]
+transform = Transform3D(0.8744843, 0, -0.4850539, 0, 1, 0, 0.4850539, 0, 0.8744843, 1.9073334, -0.31982183, 0.91795474)
+shape = SubResource("BoxShape3D_8x4x7")
+
+[node name="CollisionShape3D3" type="CollisionShape3D" parent="suelos1/piedras/StaticBody3D" unique_id=1869310713]
+transform = Transform3D(2.4788578, 0, 0, 0, 2.4788578, 0, 0, 0, 2.4788578, -0.81809235, 0.3151536, 0.18665028)
+shape = SubResource("BoxShape3D_ryehj")
+
+[node name="nenufar" parent="suelos1" index="7" unique_id=927682773]
+surface_material_override/0 = SubResource("ShaderMaterial_v0c6w")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="suelos1/nenufar" index="0" unique_id=195733239]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.5979767, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="suelos1/nenufar/StaticBody3D" unique_id=2111065742]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.5258789e-05, 0)
+shape = SubResource("CylinderShape3D_yrihv")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=931377555]
+transform = Transform3D(-0.9737699, -4.3530907e-08, 0.22753525, 0.14225234, 0.78047407, 0.60878956, -0.17758538, 0.62518835, -0.7600021, -6.2329526, 27.423046, -29.34948)
+
+[editable path="suelos1"]

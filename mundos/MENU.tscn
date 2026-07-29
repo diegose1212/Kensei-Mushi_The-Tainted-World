@@ -1,0 +1,130 @@
+[gd_scene format=3 uid="uid://csyeacah8khd0"]
+
+[ext_resource type="FontFile" uid="uid://cb5v6lgepqiwh" path="res://Fuentes/ProtestRevolution-Regular.ttf" id="1_nrqbt"]
+[ext_resource type="Texture2D" uid="uid://o7l16dh6h6o4" path="res://Menú/fondo/Fondo menú.png" id="1_rcrpa"]
+[ext_resource type="AudioStream" uid="uid://d30hciryj2cdt" path="res://Musica/Whispers of the Maple.mp3" id="3_euvf0"]
+
+[sub_resource type="GDScript" id="GDScript_g8024"]
+script/source = "extends Control
+
+func _ready():
+	$VBoxContainer/BtnJugar.pressed.connect(_on_jugar)
+	$VBoxContainer/BtnAtuendos.pressed.connect(_on_atuendos)
+	_aplicar_estilo()
+
+func _aplicar_estilo():
+	var botones = [$VBoxContainer/BtnJugar, $VBoxContainer/BtnAtuendos]
+	for btn in botones:
+		var estilo_normal = StyleBoxFlat.new()
+		estilo_normal.bg_color = Color(0.05, 0.05, 0.05)
+		estilo_normal.border_color = Color(0.5, 0.0, 0.0)
+		estilo_normal.border_width_top = 1
+		estilo_normal.border_width_bottom = 1
+		estilo_normal.border_width_left = 1
+		estilo_normal.border_width_right = 1
+		btn.add_theme_stylebox_override(\"normal\", estilo_normal)
+
+		var estilo_hover = StyleBoxFlat.new()
+		estilo_hover.bg_color = Color(0.15, 0.0, 0.0)
+		estilo_hover.border_color = Color(0.8, 0.0, 0.0)
+		estilo_hover.border_width_top = 1
+		estilo_hover.border_width_bottom = 1
+		estilo_hover.border_width_left = 1
+		estilo_hover.border_width_right = 1
+
+		btn.add_theme_color_override(\"font_color\", Color(0.8, 0.7, 0.6))
+		btn.add_theme_color_override(\"font_hover_color\", Color(1.0, 1.0, 1.0))
+		btn.add_theme_font_size_override(\"font_size\", 16)
+
+func _on_jugar():
+	get_tree().change_scene_to_file(\"res://mundos/pantano_parkour.tscn\")
+
+func _on_atuendos():
+	get_tree().change_scene_to_file(\"res://personaje/atuendos/atuendos.tscn\")
+"
+
+[sub_resource type="LabelSettings" id="LabelSettings_rcrpa"]
+font_size = 100
+outline_size = 2
+outline_color = Color(0, 0, 0, 1)
+
+[node name="Menú" type="Control" unique_id=957436805]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 495.0
+offset_top = 238.0
+offset_right = 536.0
+offset_bottom = 267.0
+script = SubResource("GDScript_g8024")
+
+[node name="TextureRect" type="TextureRect" parent="." unique_id=521976064]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -11.964001
+anchor_top = -8.044001
+anchor_right = 15.977001
+anchor_bottom = 14.01
+offset_left = -6.4759827
+offset_top = -5.723984
+offset_right = 3.9429321
+offset_bottom = 5.7099915
+texture = ExtResource("1_rcrpa")
+expand_mode = 1
+flip_h = true
+
+[node name="Label" type="Label" parent="TextureRect" unique_id=95379740]
+custom_minimum_size = Vector2(44, 44)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -0.044000003
+anchor_top = -0.24700001
+anchor_right = 0.058000002
+anchor_bottom = -0.17600001
+offset_left = 346.864
+offset_top = 185.79701
+offset_right = 827.952
+offset_bottom = 259.57602
+grow_horizontal = 0
+theme_override_colors/font_color = Color(0.81119686, 0.7078064, 0.6187467, 1)
+theme_override_fonts/font = ExtResource("1_nrqbt")
+theme_override_font_sizes/font_size = 44
+text = "KENSEI-MUSHI"
+label_settings = SubResource("LabelSettings_rcrpa")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1474923142]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -142.5
+offset_top = 15.5
+offset_right = 270.5
+offset_bottom = 141.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+
+[node name="BtnJugar" type="Button" parent="VBoxContainer" unique_id=1301229595]
+custom_minimum_size = Vector2(220, 55)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_nrqbt")
+text = "JUGAR"
+
+[node name="BtnAtuendos" type="Button" parent="VBoxContainer" unique_id=87363366]
+custom_minimum_size = Vector2(220, 55)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_nrqbt")
+text = "ATUENDOS"
+
+[node name="VideoStreamPlayer" type="VideoStreamPlayer" parent="." unique_id=328525020]
+layout_mode = 0
+offset_left = -489.0
+offset_top = -234.0
+offset_right = -483.0
+offset_bottom = -222.0
+
+[node name="WhispersOfTheMaple" type="AudioStreamPlayer" parent="VideoStreamPlayer" unique_id=713089060]
+stream = ExtResource("3_euvf0")
+autoplay = true

@@ -1,0 +1,72 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://lnj1nx1v2kdv"]
+
+[ext_resource type="Material" uid="uid://c0vomi48cyksr" path="res://shaders/outlines/outline_delgado.tres" id="1_1bl0p"]
+[ext_resource type="Texture2D" uid="uid://cd8i772klun48" path="res://assets/cueva/cueva_malla_textura piso.png" id="2_q7ko4"]
+
+[sub_resource type="Shader" id="Shader_82hpm"]
+code = "shader_type spatial;
+render_mode specular_toon;
+
+uniform vec4 albedo : source_color = vec4(1.0);
+uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform sampler2D noise_texture : filter_nearest, repeat_enable;
+uniform float noise_scale = 5.0;
+
+uniform float cutoff_1 : hint_range(0.0, 1.0) = 0.6;
+uniform float cutoff_2 : hint_range(0.0, 1.0) = 0.3;
+
+uniform vec4 color_luz : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform vec4 color_medio : source_color = vec4(0.6, 0.6, 0.7, 1.0);
+uniform vec4 color_sombra : source_color = vec4(0.2, 0.2, 0.3, 1.0);
+
+varying vec2 vertex_uv;
+
+void vertex() {
+    vertex_uv = UV;
+}
+
+void fragment() {
+    vec4 tex = texture(texture_albedo, vertex_uv);
+    ALBEDO = albedo.rgb * tex.rgb;
+}
+
+void light() {
+    float NdotL = dot(NORMAL, LIGHT);
+    float noise = texture(noise_texture, vertex_uv * noise_scale).r;
+    
+    float adj_cut1 = cutoff_1 + (noise - 0.5) * 0.25;
+    float adj_cut2 = cutoff_2 + (noise - 0.5) * 0.25;
+    
+    vec3 final_shading = color_sombra.rgb;
+    if (NdotL > adj_cut1) {
+        final_shading = color_luz.rgb;
+    } else if (NdotL > adj_cut2) {
+        final_shading = color_medio.rgb;
+    }
+    
+    DIFFUSE_LIGHT = LIGHT_COLOR * final_shading * ATTENUATION;
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_emw85"]
+frequency = 0.1
+offset = Vector3(717.95, -358.97, 150)
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_e84qq"]
+width = 1000
+height = 100
+noise = SubResource("FastNoiseLite_emw85")
+
+[resource]
+render_priority = 0
+next_pass = ExtResource("1_1bl0p")
+shader = SubResource("Shader_82hpm")
+shader_parameter/albedo = Color(0.90359825, 0.90359825, 0.9035982, 1)
+shader_parameter/texture_albedo = ExtResource("2_q7ko4")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_e84qq")
+shader_parameter/noise_scale = 0.0
+shader_parameter/cutoff_1 = 0.446000021185
+shader_parameter/cutoff_2 = 0.0
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)

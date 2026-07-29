@@ -1,0 +1,331 @@
+[gd_scene format=3 uid="uid://db2s2w57pi1w3"]
+
+[ext_resource type="Script" uid="uid://bj4kgc02grukn" path="res://personaje/jugador/jugador.gd" id="1_eiaww"]
+[ext_resource type="PackedScene" uid="uid://10gqjel0dl1j" path="res://personaje/malla_jugador.glb" id="2_rmnys"]
+[ext_resource type="Script" uid="uid://clqp2ivq85y5p" path="res://personaje/jugador/barra_jugador.gd" id="3_8q8n5"]
+[ext_resource type="Script" uid="uid://bc7dd8fnbbjp1" path="res://personaje/jugador/spring_arm_3d.gd" id="3_rmnys"]
+[ext_resource type="Texture2D" uid="uid://da5jw6twv2jxn" path="res://personaje/jugador/texturas/malla_jugador_cuerpo Base Color.png" id="4_be6jp"]
+[ext_resource type="Shader" uid="uid://cam6wfn7ccp8g" path="res://shaders/outlines/outline_delgado.gdshader" id="4_tx5an"]
+[ext_resource type="Texture2D" uid="uid://dfflx7ig43pgp" path="res://personaje/jugador/texturas/malla_jugador_pelo Base Color.png" id="5_82hpm"]
+[ext_resource type="Script" uid="uid://btk4x01bkr0ky" path="res://personaje/reintentar.gd" id="8_82hpm"]
+[ext_resource type="FontFile" uid="uid://cb5v6lgepqiwh" path="res://Fuentes/ProtestRevolution-Regular.ttf" id="8_gkrsn"]
+[ext_resource type="AudioStream" uid="uid://d1htx1abubs34" path="res://Musica/mortem.mp3" id="10_0yrcp"]
+[ext_resource type="AudioStream" uid="uid://bfn75ba83i4ru" path="res://Musica/POSTMORTEM1.mp3" id="10_om4xl"]
+[ext_resource type="AudioStream" uid="uid://brjn5dw6piprl" path="res://Musica/ataqueespada.mp3" id="12_qsdpx"]
+[ext_resource type="AudioStream" uid="uid://hcy8vmng1lin" path="res://Musica/esquive.mp3" id="13_qsdpx"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_eiaww"]
+height = 1.385498
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_gkrsn"]
+render_priority = 0
+shader = ExtResource("4_tx5an")
+shader_parameter/outline_thickness = 1.0
+shader_parameter/outline_color = Color(0, 0, 0, 1)
+
+[sub_resource type="Shader" id="Shader_82hpm"]
+code = "shader_type spatial;
+render_mode specular_toon;
+
+uniform vec4 albedo : source_color = vec4(1.0);
+uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform sampler2D noise_texture : filter_nearest, repeat_enable;
+uniform float noise_scale = 5.0;
+
+uniform float cutoff_1 : hint_range(0.0, 1.0) = 0.6;
+uniform float cutoff_2 : hint_range(0.0, 1.0) = 0.3;
+
+uniform vec4 color_luz : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform vec4 color_medio : source_color = vec4(0.6, 0.6, 0.7, 1.0);
+uniform vec4 color_sombra : source_color = vec4(0.2, 0.2, 0.3, 1.0);
+
+varying vec2 vertex_uv;
+
+void vertex() {
+    vertex_uv = UV;
+}
+
+void fragment() {
+    vec4 tex = texture(texture_albedo, vertex_uv);
+    ALBEDO = albedo.rgb * tex.rgb;
+}
+
+void light() {
+    float NdotL = dot(NORMAL, LIGHT);
+    float noise = texture(noise_texture, vertex_uv * noise_scale).r;
+    
+    float adj_cut1 = cutoff_1 + (noise - 0.5) * 0.25;
+    float adj_cut2 = cutoff_2 + (noise - 0.5) * 0.25;
+    
+    vec3 final_shading = color_sombra.rgb;
+    if (NdotL > adj_cut1) {
+        final_shading = color_luz.rgb;
+    } else if (NdotL > adj_cut2) {
+        final_shading = color_medio.rgb;
+    }
+    
+    DIFFUSE_LIGHT = LIGHT_COLOR * final_shading * ATTENUATION;
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_emw85"]
+frequency = 0.1
+offset = Vector3(717.95, -358.97, 150)
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_e84qq"]
+width = 1000
+height = 100
+noise = SubResource("FastNoiseLite_emw85")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0yrcp"]
+render_priority = 0
+next_pass = SubResource("ShaderMaterial_gkrsn")
+shader = SubResource("Shader_82hpm")
+shader_parameter/albedo = Color(0.90359825, 0.90359825, 0.9035982, 1)
+shader_parameter/texture_albedo = ExtResource("4_be6jp")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_e84qq")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6000000285
+shader_parameter/cutoff_2 = 0.0
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_b3d1c"]
+render_priority = 0
+shader = ExtResource("4_tx5an")
+shader_parameter/outline_thickness = 1.0
+shader_parameter/outline_color = Color(0, 0, 0, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_om4xl"]
+render_priority = 0
+next_pass = SubResource("ShaderMaterial_b3d1c")
+shader = SubResource("Shader_82hpm")
+shader_parameter/albedo = Color(0.90359825, 0.90359825, 0.9035982, 1)
+shader_parameter/texture_albedo = ExtResource("5_82hpm")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_e84qq")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6000000285
+shader_parameter/cutoff_2 = 0.0
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_07f42"]
+bg_color = Color(0.25499278, 0.29471, 0.33442724, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8q8n5"]
+bg_color = Color(0.29287755, 0.9116276, 0.27932826, 1)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_rmnys"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_07f42"]
+margin = 0.363
+height = 1.0
+radius = 1.145
+
+[sub_resource type="Gradient" id="Gradient_qsdpx"]
+offsets = PackedFloat32Array(0.8043478, 0.8961353, 1)
+colors = PackedColorArray(0, 0, 0, 0, 0.31105992, 0.31105992, 0.31105992, 1, 0.70980394, 0.09803922, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_qiw5i"]
+gradient = SubResource("Gradient_qsdpx")
+fill = 1
+fill_from = Vector2(0.510453, 0.5)
+fill_to = Vector2(0.5, 0)
+
+[node name="Jugador" type="CharacterBody3D" unique_id=225331804]
+collision_layer = 2
+collision_mask = 15
+script = ExtResource("1_eiaww")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1720943504]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.055786133, 0)
+shape = SubResource("CapsuleShape3D_eiaww")
+
+[node name="malla_jugador" parent="." unique_id=314096982 instance=ExtResource("2_rmnys")]
+transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, -0.73920614, 0)
+
+[node name="Skeleton3D" parent="malla_jugador/Armature" parent_id_path=PackedInt32Array(314096982, 565382857) index="0" unique_id=1145784547]
+bones/0/position = Vector3(-2.2907114, -25.229378, -352.58264)
+bones/0/rotation = Quaternion(-0.68012553, -0.18100585, 0.14074971, 0.6963158)
+bones/1/position = Vector3(1.4491379e-06, 30.614368, -1.5518459)
+bones/1/rotation = Quaternion(0.074561305, 0.014367407, 0.0072196787, 0.9970868)
+bones/2/position = Vector3(-2.7418137e-06, 35.76252, -5.2750056e-06)
+bones/2/rotation = Quaternion(0.025461687, 0.0033797743, 0.0040362207, 0.9996619)
+bones/3/position = Vector3(-1.6540289e-06, 40.871593, 5.364421e-06)
+bones/3/rotation = Quaternion(0.025424238, 0.0036143467, 0.004062061, 0.999662)
+bones/4/position = Vector3(1.0612421e-06, 45.980537, 6.2809286e-06)
+bones/4/rotation = Quaternion(0.058965385, 0.015416612, 0.012855575, 0.9980582)
+bones/5/position = Vector3(-7.1525574e-07, 19.66343, 2.2155337)
+bones/5/rotation = Quaternion(-0.14048114, 0.10904369, -0.060710523, 0.9821857)
+bones/6/position = Vector3(4.7683716e-07, 95.31008, 10.738945)
+bones/7/position = Vector3(20.097662, 39.16845, -0.26877445)
+bones/7/rotation = Quaternion(-0.60784847, -0.4028415, 0.5000499, -0.46710727)
+bones/8/position = Vector3(5.592387e-06, 42.95948, -7.641098e-06)
+bones/8/rotation = Quaternion(0.23260877, -0.45211288, 0.32323697, 0.798126)
+bones/9/position = Vector3(-3.21811e-05, 118.35999, -1.0826587e-05)
+bones/9/rotation = Quaternion(0.03678862, -0.0032299017, 0.7404842, 0.6710584)
+bones/10/position = Vector3(1.5879812e-06, 114.24054, 2.468775e-05)
+bones/10/rotation = Quaternion(-0.094112396, 0.1714498, 0.08650774, 0.97686446)
+bones/11/position = Vector3(-11.735198, 9.45417, 1.642186)
+bones/11/rotation = Quaternion(0.24538228, 0.12446212, 0.2627271, 0.92480874)
+bones/12/position = Vector3(-2.0456169, 11.953395, 2.3985936e-05)
+bones/12/rotation = Quaternion(0.041082833, -0.05513867, -0.1757362, 0.98203295)
+bones/13/position = Vector3(-0.47637987, 11.908324, 1.8661522e-06)
+bones/13/rotation = Quaternion(0.059406828, -0.051206235, -0.1967448, 0.9773128)
+bones/14/position = Vector3(2.5220313, 9.588125, 2.3711822e-05)
+bones/15/position = Vector3(-15.2316475, 33.635715, 0.017389448)
+bones/15/rotation = Quaternion(0.6153381, 0.1193385, 0.07763911, 0.7752997)
+bones/16/position = Vector3(0.0016922951, 12.789819, 0.00010586945)
+bones/16/rotation = Quaternion(0.73076034, 0.0002980195, -0.1154, 0.6728092)
+bones/17/position = Vector3(-0.01121521, 12.223189, -1.3508055e-05)
+bones/17/rotation = Quaternion(0.62490445, 7.497147e-07, -0.0976569, 0.7745693)
+bones/18/position = Vector3(0.00959715, 10.350623, 8.43676e-05)
+bones/19/position = Vector3(5.077234, 38.16069, -0.026644718)
+bones/19/rotation = Quaternion(0.61547613, 0.117294714, 0.07459451, 0.7758007)
+bones/20/position = Vector3(-0.025409222, 11.997784, 2.1424763e-05)
+bones/20/rotation = Quaternion(0.6241853, 0.001643795, -0.103249036, 0.7744221)
+bones/21/position = Vector3(-0.035905123, 11.118673, -2.3182478e-05)
+bones/21/rotation = Quaternion(0.6241769, -0.00076518685, -0.09949311, 0.77492183)
+bones/22/position = Vector3(0.28194815, 13.898341, 0.19369285)
+bones/23/position = Vector3(-20.097668, 39.176212, -0.42140582)
+bones/23/rotation = Quaternion(0.65172523, -0.3651078, 0.45859313, 0.48129305)
+bones/24/position = Vector3(1.98015e-05, 42.9595, 5.48681e-05)
+bones/24/rotation = Quaternion(0.28173828, 0.29283884, -0.453018, 0.7935009)
+bones/25/position = Vector3(4.1331155e-06, 118.339264, -1.1273296e-06)
+bones/25/rotation = Quaternion(0.04453688, 0.002456382, -0.85033846, 0.52434254)
+bones/26/position = Vector3(9.209653e-06, 114.23929, 3.1967218e-05)
+bones/26/rotation = Quaternion(0.1046544, -0.05695345, 0.10413959, 0.9874)
+bones/27/position = Vector3(11.797604, 9.079716, 1.5862135)
+bones/27/rotation = Quaternion(0.32481003, -0.055206433, -0.26063806, 0.9074793)
+bones/28/position = Vector3(2.1279364, 11.786586, -5.206354e-05)
+bones/28/rotation = Quaternion(0.031612214, 0.022568341, 0.17795976, 0.98327094)
+bones/29/position = Vector3(0.4320631, 12.032062, 4.5867422e-05)
+bones/29/rotation = Quaternion(0.0038708455, 0.010728915, 0.10127318, 0.99479324)
+bones/30/position = Vector3(-2.5600512, 9.393446, 3.9577142e-05)
+bones/31/position = Vector3(15.307128, 33.008667, 0.039247405)
+bones/31/rotation = Quaternion(0.6418018, -0.13043903, -0.0726112, 0.75219935)
+bones/32/position = Vector3(0.0011663438, 12.953703, 3.95886e-05)
+bones/32/rotation = Quaternion(0.65302914, 6.1087776e-05, 0.100484766, 0.75063694)
+bones/33/position = Vector3(-0.0032606125, 12.193021, -1.2322027e-05)
+bones/33/rotation = Quaternion(0.65302885, 2.2701452e-05, 0.100793354, 0.75059575)
+bones/34/position = Vector3(0.0021158778, 10.8731785, -1.4756015e-05)
+bones/35/position = Vector3(-5.1023364, 36.631706, -0.01522709)
+bones/35/rotation = Quaternion(0.6420075, -0.12735723, -0.06831962, 0.75295347)
+bones/36/position = Vector3(0.03253174, 12.309092, -8.114585e-05)
+bones/36/rotation = Quaternion(0.6519437, -0.00235403, 0.10815109, 0.75051135)
+bones/37/position = Vector3(0.052865982, 11.383239, -3.939891e-05)
+bones/37/rotation = Quaternion(0.65193343, 0.0010241297, 0.102906674, 0.7512602)
+bones/38/position = Vector3(-0.16227607, 13.498579, 0.11393901)
+bones/39/position = Vector3(32.778557, -17.018452, 0.45242783)
+bones/39/rotation = Quaternion(0.07431528, 0.35089973, 0.9262368, -0.11589651)
+bones/40/position = Vector3(-5.900293e-06, 171.95924, -4.923949e-06)
+bones/40/rotation = Quaternion(-0.43823928, 0.0013273387, 0.05044023, 0.897441)
+bones/41/position = Vector3(-5.126439e-06, 179.50931, -1.7262755e-05)
+bones/41/rotation = Quaternion(0.58540994, 0.018597191, -0.051224437, 0.8089038)
+bones/42/position = Vector3(-2.4140363e-06, 64.675964, -1.0451517e-05)
+bones/42/rotation = Quaternion(0.25239572, -0.14309937, 0.035918403, 0.95631003)
+bones/43/position = Vector3(2.0936095e-06, 24.777208, 4.1723433e-07)
+bones/44/position = Vector3(-32.778553, -17.018473, 0.28647533)
+bones/44/rotation = Quaternion(-0.08069484, 0.15154476, 0.98257005, 0.07126415)
+bones/45/position = Vector3(-1.8704726e-05, 172.06606, -3.9447305e-06)
+bones/45/rotation = Quaternion(-0.43946382, -0.06297371, -0.008439485, 0.8960105)
+bones/46/position = Vector3(-4.3713067e-06, 179.7688, -3.6358747e-06)
+bones/46/rotation = Quaternion(0.7532188, -0.015651554, 0.029532567, 0.6569203)
+bones/47/position = Vector3(8.879194e-06, 68.19483, -9.020005e-08)
+bones/47/rotation = Quaternion(0.23111004, 0.14436696, -0.033933137, 0.9615586)
+bones/48/position = Vector3(2.5369131e-06, 24.626072, 4.6192326e-07)
+
+[node name="mixamorig_RightHand" parent="malla_jugador/Armature/Skeleton3D" index="0" unique_id=1200378803]
+transform = Transform3D(0.39960983, 0.53436536, 0.7448256, -0.86215407, 0.495148, 0.10732098, -0.31145024, -0.685041, 0.65857196, -65.72528, 99.33396, -516.02295)
+
+[node name="cuerpo" parent="malla_jugador/Armature/Skeleton3D" index="1" unique_id=496290163]
+surface_material_override/0 = SubResource("ShaderMaterial_0yrcp")
+
+[node name="pelo" parent="malla_jugador/Armature/Skeleton3D" index="2" unique_id=594329704]
+surface_material_override/0 = SubResource("ShaderMaterial_om4xl")
+
+[node name="ropa1" parent="malla_jugador/Armature/Skeleton3D" index="3" unique_id=552967569]
+visible = false
+
+[node name="VidaJugador" type="ProgressBar" parent="." unique_id=73112227]
+offset_right = 382.0
+offset_bottom = 36.0
+theme_override_styles/background = SubResource("StyleBoxFlat_07f42")
+theme_override_styles/fill = SubResource("StyleBoxFlat_8q8n5")
+script = ExtResource("3_8q8n5")
+vida_maxima = 100.0
+
+[node name="SpringArm3D" type="SpringArm3D" parent="." unique_id=550754002]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.050353885, 0.18062687, 0.04550302)
+shape = SubResource("SphereShape3D_rmnys")
+spring_length = 3.0
+script = ExtResource("3_rmnys")
+
+[node name="Camera3D" type="Camera3D" parent="SpringArm3D" unique_id=581019114]
+transform = Transform3D(7.777781, 0, 0, 0, 146.05574, 24.959585, 0, -3.2227864, 18.858742, 0, 0, 0)
+
+[node name="AreaAtaque" type="Area3D" parent="." unique_id=197203963]
+collision_layer = 0
+collision_mask = 8
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="AreaAtaque" unique_id=1634854829]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2029146, 0)
+shape = SubResource("CylinderShape3D_07f42")
+
+[node name="PantallaMuerte" type="CanvasLayer" parent="." unique_id=489446215]
+process_mode = 3
+visible = false
+
+[node name="ColorRect" type="ColorRect" parent="PantallaMuerte" unique_id=1608299252]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.03137255, 0.03137255, 0.03137255, 0.88235295)
+
+[node name="Reintentar" type="Button" parent="PantallaMuerte" unique_id=791699731]
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_top = -15.5
+offset_bottom = 15.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("8_gkrsn")
+text = "Reintentar"
+script = ExtResource("8_82hpm")
+
+[node name="SonidoClic" type="AudioStreamPlayer" parent="PantallaMuerte/Reintentar" unique_id=2140300130]
+stream = ExtResource("10_om4xl")
+
+[node name="SonidoMuerte" type="AudioStreamPlayer" parent="." unique_id=810392873]
+process_mode = 3
+stream = ExtResource("10_0yrcp")
+
+[node name="SonidoAtaque" type="AudioStreamPlayer" parent="." unique_id=1374367888]
+stream = ExtResource("12_qsdpx")
+
+[node name="SonidoGiro" type="AudioStreamPlayer" parent="." unique_id=963805925]
+stream = ExtResource("13_qsdpx")
+
+[node name="EfectoVeneno" type="CanvasLayer" parent="." unique_id=721876009]
+layer = -1
+
+[node name="TextureRect" type="TextureRect" parent="EfectoVeneno" unique_id=1650200824]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = SubResource("GradientTexture2D_qiw5i")
+
+[connection signal="body_entered" from="AreaAtaque" to="." method="_on_area_ataque_body_entered"]
+[connection signal="pressed" from="PantallaMuerte/Reintentar" to="PantallaMuerte/Reintentar" method="_on_pressed"]
+
+[editable path="malla_jugador"]

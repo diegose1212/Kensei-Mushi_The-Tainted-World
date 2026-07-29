@@ -1,0 +1,121 @@
+[gd_scene format=3 uid="uid://slgvftc54av2"]
+
+[ext_resource type="Script" uid="uid://dhhwmuulna3jf" path="res://personaje/boss/boss.gd" id="1_7r1nq"]
+[ext_resource type="PackedScene" uid="uid://dvy657rghdisd" path="res://personaje/mallaBoss1.5.glb" id="2_7r1nq"]
+[ext_resource type="Material" uid="uid://u5r3f18pdqid" path="res://shaders/shaders_personajes/shader_boss.tres" id="3_7miw8"]
+[ext_resource type="AudioStream" uid="uid://dvg5via7eyk3a" path="res://Musica/atackboss.mp3" id="4_a2igm"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_7miw8"]
+size = Vector3(1, 0.22230175, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_a2igm"]
+size = Vector3(1, 2.5653076, 8)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_a2igm"]
+bg_color = Color(0.25490198, 0.29411766, 0.33333334, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_618ko"]
+bg_color = Color(0.29411766, 0.9098039, 0.2784314, 1)
+
+[sub_resource type="GDScript" id="GDScript_a2igm"]
+script/source = "extends ProgressBar
+
+signal jefe_muerto
+
+@export var vida_maxima: float = 1000.0
+var vida_actual: float
+
+func _ready() -> void:
+	max_value = vida_maxima
+	vida_actual = vida_maxima
+	value = vida_actual
+
+func recibir_daño(cantidad: float) -> void:
+	vida_actual = clampf(vida_actual - cantidad, 0.0, vida_maxima)
+	value = vida_actual
+	
+	if vida_actual <= 0:
+		jefe_muerto.emit()
+"
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_7miw8"]
+radius = 0.8
+
+[node name="boss" type="CharacterBody3D" unique_id=650855855]
+collision_layer = 8
+collision_mask = 3
+script = ExtResource("1_7r1nq")
+
+[node name="CollisionSueloBajo" type="CollisionShape3D" parent="." unique_id=650103536]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.701084, 0)
+shape = SubResource("BoxShape3D_7miw8")
+debug_fill = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1623007637]
+transform = Transform3D(1, 0, 0, 0, 0.999963, -0.008604337, 0, 0.008604337, 0.999963, 0, -0.035333693, -2.5427153)
+shape = SubResource("BoxShape3D_a2igm")
+
+[node name="barra_boss" type="ProgressBar" parent="." unique_id=52278084]
+anchors_preset = -1
+anchor_left = 0.99700004
+anchor_right = 0.99700004
+offset_left = -379.54407
+offset_right = -0.5440674
+offset_bottom = 27.0
+theme_override_styles/background = SubResource("StyleBoxFlat_a2igm")
+theme_override_styles/fill = SubResource("StyleBoxFlat_618ko")
+script = SubResource("GDScript_a2igm")
+
+[node name="mallaBoss" parent="." unique_id=681426188 instance=ExtResource("2_7r1nq")]
+transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, -1.0403725, 0.28991127)
+
+[node name="Skeleton3D" parent="mallaBoss/Armature" parent_id_path=PackedInt32Array(681426188, 391886191) index="0" unique_id=208515275]
+bones/0/position = Vector3(-0.4769741, 7.3503428, 11.41733)
+bones/0/rotation = Quaternion(-0.013213622, 0.542031, 0.83969945, -0.03053801)
+bones/1/rotation = Quaternion(0.054435372, -0.00053854083, -0.0047498373, 0.99850595)
+bones/2/rotation = Quaternion(-0.09736926, -0.029958434, -0.0029323143, 0.994793)
+bones/3/rotation = Quaternion(-0.123891346, 0.36810923, 0.049562626, 0.9201576)
+bones/4/rotation = Quaternion(0.48396018, -0.30743942, 0.08196134, 0.8151969)
+bones/5/rotation = Quaternion(-0.49446893, -0.52791584, -0.47988892, 0.49649978)
+bones/6/position = Vector3(-0.4003146, 7.6970673, 10.8753805)
+bones/6/rotation = Quaternion(-0.016394787, -0.004929644, 0.99985206, -0.0016636355)
+bones/7/rotation = Quaternion(0.0071170325, 0.015401472, -0.00603845, 0.9998378)
+bones/8/rotation = Quaternion(-0.125222, 4.99596e-08, 4.9327036e-09, 0.99212885)
+bones/9/rotation = Quaternion(-0.6100834, 0.12894513, 0.16663417, 0.76380914)
+bones/10/rotation = Quaternion(0.002102933, 0.003490369, -0.18008362, 0.98364294)
+bones/11/rotation = Quaternion(0.113397025, 0.8275773, -0.00014171004, 0.54977906)
+bones/12/rotation = Quaternion(0.14527445, 0.55642694, 0.25987923, 0.7757237)
+bones/13/rotation = Quaternion(-0.24106424, 0.96995765, 0.026944138, -0.018552793)
+bones/14/rotation = Quaternion(0.050114475, 0.011367948, -0.24134395, 0.9690781)
+bones/15/rotation = Quaternion(0.024303978, 0.014500322, -0.2138271, 0.9764615)
+bones/16/rotation = Quaternion(0.060203925, 0.025611114, -0.28912255, 0.9550538)
+bones/17/rotation = Quaternion(0.17482992, 0.9820512, 0.07014998, -0.00943857)
+bones/18/rotation = Quaternion(0.016674543, 0.014134314, 0.17200294, 0.9848539)
+bones/19/rotation = Quaternion(-0.12235013, 0.008016764, 0.20830834, 0.9703473)
+bones/20/rotation = Quaternion(0.17974542, 0.11873858, 0.47564858, 0.8528489)
+bones/21/rotation = Quaternion(-0.10648289, 0.005669385, 0.0040675956, 0.9942901)
+bones/22/position = Vector3(-0.43262196, 8.153372, 10.935184)
+bones/22/rotation = Quaternion(-0.011144938, 0.649694, 0.7600547, 0.009502726)
+bones/23/position = Vector3(0.30280805, 6.5430374, -0.6725784)
+bones/23/rotation = Quaternion(-0.96938574, -0.21613765, -0.059332527, -0.10027745)
+bones/24/position = Vector3(-0.39888793, 6.439412, -0.8019074)
+bones/24/rotation = Quaternion(-0.9854879, 0.10248156, -0.08076351, -0.10857552)
+
+[node name="cuerpo" parent="mallaBoss/Armature/Skeleton3D" index="0" unique_id=1069771775]
+surface_material_override/0 = ExtResource("3_7miw8")
+
+[node name="AreaMordisco" type="Area3D" parent="." unique_id=1034051148]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.1929337)
+collision_layer = 8
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="AreaMordisco" unique_id=935990755]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.674808, 1.1801274)
+shape = SubResource("SphereShape3D_7miw8")
+
+[node name="SonidoAtaque" type="AudioStreamPlayer3D" parent="." unique_id=505033352]
+stream = ExtResource("4_a2igm")
+
+[connection signal="body_entered" from="AreaMordisco" to="." method="_on_area_mordisco_body_entered"]
+
+[editable path="mallaBoss"]

@@ -1,0 +1,93 @@
+[gd_scene format=3 uid="uid://bobgloolqrpim"]
+
+[ext_resource type="Material" uid="uid://c0vomi48cyksr" path="res://shaders/outlines/outline_delgado.tres" id="1_8v1u4"]
+[ext_resource type="Script" uid="uid://dupnb0xihadrf" path="res://mundos/bola_veneno.gd" id="1_tarx7"]
+[ext_resource type="Texture2D" uid="uid://4pj6g5rufjmm" path="res://assets/cueva/texturas/cueva_Icosphere Base Color.png" id="2_tarx7"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_jd2u5"]
+
+[sub_resource type="Shader" id="Shader_82hpm"]
+code = "shader_type spatial;
+render_mode specular_toon;
+
+uniform vec4 albedo : source_color = vec4(1.0);
+uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform sampler2D noise_texture : filter_nearest, repeat_enable;
+uniform float noise_scale = 5.0;
+
+uniform float cutoff_1 : hint_range(0.0, 1.0) = 0.6;
+uniform float cutoff_2 : hint_range(0.0, 1.0) = 0.3;
+
+uniform vec4 color_luz : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform vec4 color_medio : source_color = vec4(0.6, 0.6, 0.7, 1.0);
+uniform vec4 color_sombra : source_color = vec4(0.2, 0.2, 0.3, 1.0);
+
+varying vec2 vertex_uv;
+
+void vertex() {
+    vertex_uv = UV;
+}
+
+void fragment() {
+    vec4 tex = texture(texture_albedo, vertex_uv);
+    ALBEDO = albedo.rgb * tex.rgb;
+}
+
+void light() {
+    float NdotL = dot(NORMAL, LIGHT);
+    float noise = texture(noise_texture, vertex_uv * noise_scale).r;
+    
+    float adj_cut1 = cutoff_1 + (noise - 0.5) * 0.25;
+    float adj_cut2 = cutoff_2 + (noise - 0.5) * 0.25;
+    
+    vec3 final_shading = color_sombra.rgb;
+    if (NdotL > adj_cut1) {
+        final_shading = color_luz.rgb;
+    } else if (NdotL > adj_cut2) {
+        final_shading = color_medio.rgb;
+    }
+    
+    DIFFUSE_LIGHT = LIGHT_COLOR * final_shading * ATTENUATION;
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_emw85"]
+frequency = 0.1
+offset = Vector3(717.95, -358.97, 150)
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_e84qq"]
+width = 1000
+height = 100
+noise = SubResource("FastNoiseLite_emw85")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_gxgfu"]
+render_priority = 0
+next_pass = ExtResource("1_8v1u4")
+shader = SubResource("Shader_82hpm")
+shader_parameter/albedo = Color(0.7520755, 0.068164654, 0.81362647, 1)
+shader_parameter/texture_albedo = ExtResource("2_tarx7")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_e84qq")
+shader_parameter/noise_scale = 5.0
+shader_parameter/cutoff_1 = 0.6000000285
+shader_parameter/cutoff_2 = 0.0
+shader_parameter/color_luz = Color(0.8431839, 0.8431839, 0.84318376, 1)
+shader_parameter/color_medio = Color(0.4071941, 0.40621567, 0.5075015, 1)
+shader_parameter/color_sombra = Color(0.24764168, 0.24771422, 0.32140926, 1)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_whbci"]
+radius = 0.34
+
+[node name="bola_veneno" type="Area3D" unique_id=210323042]
+collision_layer = 8
+collision_mask = 2
+script = ExtResource("1_tarx7")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=2007616111]
+transform = Transform3D(0.6086057, 0, 0, 0, 0.6379118, 0, 0, 0, 0.6154262, 0, 0, 0)
+mesh = SubResource("SphereMesh_jd2u5")
+surface_material_override/0 = SubResource("ShaderMaterial_gxgfu")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=526529974]
+shape = SubResource("SphereShape3D_whbci")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
